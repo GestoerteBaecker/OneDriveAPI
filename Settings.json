@@ -1,0 +1,9 @@
+{
+  "refresh_token": "XXX",
+  "browse_url": "https://graph.microsoft.com/v1.0/",
+  "auth_url": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+  "client_id": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+  "permissions": ["offline_access", "files.readwrite", "User.Read"],
+  "redirect_uri": "https://login.microsoftonline.com/common/oauth2/nativeclient",
+  "max_threads": 5
+}
