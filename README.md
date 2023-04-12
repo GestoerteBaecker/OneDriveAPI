@@ -1,6 +1,6 @@
 # OneDriveAPI
 
-This is a really simple Python API to communicate to OneDrive. It only uses the authentication with access and refresh tokens. 
+This is a really simple Python API to communicate to OneDrive (Download, Upload, Fetch). It only uses the authentication with access and refresh tokens. 
 
 ## Prerequisites
 For the usage it is necessary to allow the connection of OneDrive to your app. Please follow the steps below:
@@ -11,5 +11,5 @@ For the usage it is necessary to allow the connection of OneDrive to your app. P
 
 ## Usage
 Please see Test.py for the usage.
-The error handling is done by throwing exceptions, so ensure to always use try-catches 
+The error handling is done by throwing exceptions, so ensure to always use try-catches. 
 Since all the other SDKs are deprecated i tried to do my own. If you feel the need to adapt, extend or improve something, let me know and contribute. Thank you :)
