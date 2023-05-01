@@ -1,6 +1,6 @@
 # OneDriveAPI
 
-This is a really simple Python API to communicate to OneDrive (Download, Upload, Fetch). It only uses the authentication with access and refresh tokens. 
+This is a really simple Python API to communicate to OneDrive (Download, Upload, Fetch). It only uses the authentication with access and refresh tokens. For first usage, leave the variable 'refresh_token' in the Settings.json empty. After trying to connect to OneDrive you are prompted to grant access (enter your username and password). Afterwards the refresh token is generated and could be saved for later usage (it is valid for 3 months; after this period you are prompted again to grant access).
 
 ## Prerequisites
 For the usage it is necessary to allow the connection of OneDrive to your app. Please follow the steps below:
