@@ -2,9 +2,11 @@ from datetime import datetime
 import json
 import os
 import requests
+from selenium import webdriver
 from threading import Thread, Lock
 import time
 from typing import Any, Type
+import urllib
 
 
 class OneDrive:
@@ -20,6 +22,7 @@ class OneDrive:
         self.threads = [] # here the running threads are saved
         self.max_threads: int = 0 # maximum number of threads used for communicating to OneDrive
         self.refresh_token: str = "" # used for granting a new access token
+        self.refresh_token_url: str = "" # used for granting a new refresh token
         self.url: str = "" # browse URL of OneDrive
         self.auth_url: str = "" # authentication URL
         self.client_id: str = "" # ID if the registered application
@@ -35,6 +38,7 @@ class OneDrive:
         self.headers: dict = dict() # holds the token
         self.errors: list = [] # error descriptions
         self.is_connected = False # specifies if a connection to OneDrive is available
+        self.refresh_token_updated = False # specifies if a new refresh token was granted. If this is True, the value of 'refresh_token' could be saved to local drive (where all the other data for OneDrive is stored)
 
         self._SetParameters(connection_parameters)
         self._CheckConnected()
@@ -86,6 +90,7 @@ class OneDrive:
         try:
             self._SetsAndChecksVariable(parameters, "max_threads", int, "max_threads")
             self._SetsAndChecksVariable(parameters, "refresh_token", str, "refresh_token")
+            self._SetsAndChecksVariable(parameters, "refresh_token_url", str, "refresh_token_url")
             self._SetsAndChecksVariable(parameters, "browse_url", str, "url")
             self._SetsAndChecksVariable(parameters, "auth_url", str, "auth_url")
             self._SetsAndChecksVariable(parameters, "client_id", str, "client_id")
@@ -144,10 +149,53 @@ class OneDrive:
             "grant_type": 'refresh_token'
         }
         response = requests.post(self.auth_url, data=data)
-        self.token = json.loads(response.text)["access_token"]
-        self.refresh_token = json.loads(response.text)["refresh_token"]
+        response_data = json.loads(response.text)
+        if not "access_token" in response_data.keys():
+            if response_data["error"] == "invalid_grant":
+                self._UpdateRefreshToken()
+            else:
+                raise Exception()
+        else:
+            self.token = response_data["access_token"]
+            self.refresh_token = response_data["refresh_token"]
         self.last_updated = time.mktime(datetime.today().timetuple())
         self.headers = {'Authorization': 'Bearer ' + self.token}
+
+
+    def _UpdateRefreshToken(self):
+        """
+        Acquires a new refresh token
+        """
+        response_type = 'code'
+
+        URL = self.refresh_token_url + '?client_id=' + self.client_id + '&scope=' + self.scope + '&response_type=' + response_type + \
+            '&redirect_uri=' + urllib.parse.quote(self.redirect_uri)
+
+        driver = webdriver.Firefox()
+        driver.get(URL)
+
+        try:
+            while True:
+                current_url = driver.current_url
+                if self.redirect_uri + "?code=" in current_url:
+                    driver.quit()
+                    break
+        except:
+            raise Exception("Could not refresh access token")
+        code = current_url[(current_url.find('?code') + len('?code') + 1):]
+
+        # Get token
+        data = {
+            "client_id": self.client_id,
+            "scope": self.permissions,
+            "code": code,
+            "redirect_uri": self.redirect_uri,
+            "grant_type": 'authorization_code'
+        }
+        response = requests.post(self.auth_url, data=data)
+        self.refresh_token = json.loads(response.text)["refresh_token"]
+        self.token = json.loads(response.text)["access_token"]
+        self.refresh_token_updated = True
 
 
     def _CheckLastHeartbeat(self) -> None:
