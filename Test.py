@@ -7,6 +7,10 @@ def main():
     try:
         # Initialize
         onedrive = OneDrive(settings)
+        if onedrive.refresh_token_updated:
+            settings["refresh_token"] = onedrive.refresh_token
+            with open("Settings.json", "w") as file:
+                json.dump(settings, file, indent=4)
 
         # Fetching
         onedrive_path = "Test/download_test/"
